@@ -1,126 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MHC - Mental Health Companion</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f7f7f8;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        header {
-            background-color: #10a37f;
-            color: white;
-            padding: 15px 20px;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        #chatbox {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .msg {
-            margin: 10px 0;
-            padding: 12px;
-            border-radius: 8px;
-            max-width: 80%;
-        }
-
-        .user {
-            background-color: #e1f5fe;
-            align-self: flex-end;
-            text-align: right;
-        }
-
-        .bot {
-            background-color: #e0f2f1;
-            align-self: flex-start;
-        }
-
-        #chatlog {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #inputArea {
-            display: flex;
-            padding: 15px;
-            background-color: #ffffff;
-            border-top: 1px solid #ccc;
-        }
-
-        input {
-            flex-grow: 1;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-
-        button {
-            margin-left: 10px;
-            padding: 10px 15px;
-            background-color: #10a37f;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0e8c6d;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>MHC - Mental Health Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 30px; }
+    #chatbox { width: 100%; max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .msg { margin: 10px 0; }
+    .user { color: blue; }
+    .bot { color: green; }
+    input { width: 80%; padding: 10px; margin-top: 10px; }
+    button { padding: 10px; }
+  </style>
 </head>
 <body>
-    <header>💬 MHC - Your Supportive Companion</header>
+  <div id="chatbox">
+    <h2>MHC - Mental Health Companion</h2>
+    <div id="chatlog"></div>
+    <input type="text" id="userInput" placeholder="How are you feeling?" autocomplete="off">
+    <button id="sendButton">Send</button>
+  </div>
 
-    <div id="chatbox">
-        <div id="chatlog">
-            <div class="msg bot"><strong>MHC:</strong> Hey there! I'm here for you. How are you feeling today?</div>
-        </div>
-    </div>
+  <script>
+    // Function to add a new message to the chat log
+    function addMessage(sender, message, cls) {
+      const chatlog = document.getElementById("chatlog");
+      const msg = document.createElement("div");
+      msg.className = "msg " + cls;
+      msg.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chatlog.appendChild(msg);
+      chatlog.scrollTop = chatlog.scrollHeight;
+    }
 
-    <div id="inputArea">
-        <input type="text" id="userInput" placeholder="Type your thoughts..." onkeydown="if(event.key === 'Enter') sendMessage()"/>
-        <button onclick="sendMessage()">Send</button>
-    </div>
+    // Function to send a message to the backend
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message) return;
 
-    <script>
-        async function sendMessage() {
-            const input = document.getElementById("userInput");
-            const message = input.value.trim();
-            if (!message) return;
+      addMessage("You", message, "user");
+      input.value = "";
 
-            addMessage("You", message, "user");
-            input.value = "";
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json();
+      addMessage("MHC", data.reply, "bot");
+    }
 
-            const res = await fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message })
-            });
+    // Attach event listener to the Send button
+    document.getElementById("sendButton").addEventListener("click", sendMessage);
 
-            const data = await res.json();
-            addMessage("MHC", data.reply, "bot");
-        }
-
-        function addMessage(sender, text, cls) {
-            const chatlog = document.getElementById("chatlog");
-            const msg = document.createElement("div");
-            msg.className = "msg " + cls;
-            msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
-            chatlog.appendChild(msg);
-            chatlog.scrollTop = chatlog.scrollHeight;
-        }
-    </script>
+    // Attach keydown event listener to the input box
+    const userInput = document.getElementById("userInput");
+    userInput.addEventListener("keydown", function(event) {
+      console.log("Key pressed:", event.key);  // Debug log
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
 </body>
 </html>

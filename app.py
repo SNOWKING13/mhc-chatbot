@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
 import requests
 import json
-import os  # Make sure to import os module
+import os
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"  # Replace with a secure random string
@@ -37,15 +37,17 @@ def chat():
     conversation = session["conversation"]
     conversation.append({"role": "user", "content": user_message})
     
+    # Replace this URL with your Ollama API URL
+    ollama_url = "http://localhost:11434/api/chat"  # Replace with your Ollama API URL
     payload = {
-        "model": "llama3",  # change this if you're using a different model in Ollama
+        "model": "llama3",  # Replace with the correct model if needed
         "messages": conversation,
-        "stream": False  # Using non-streaming to get a complete single response
+        "stream": False  # Use non-streaming to get a complete single response
     }
     
     try:
         response = requests.post(
-            "http://localhost:11434/api/chat",
+            ollama_url,
             headers={"Content-Type": "application/json"},
             json=payload
         )
@@ -61,6 +63,6 @@ def chat():
 
     return jsonify({"reply": reply})
 
-# Run app on Render with dynamic port
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))  # Ensure the port is set correctly for Render
+    app.run(host="0.0.0.0", port=port)
