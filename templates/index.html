@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1f1f1f;
+            color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #2b2b2b;
+            color: #fddde6;
+            padding: 15px 20px;
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+        }
+
+        header a {
+            color: #ff6f91;
+            text-decoration: none;
+        }
+
+        #chatbox {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .msg {
+            margin: 10px 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .user {
+            background-color: #2e8b57;
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .bot {
+            background-color: #444;
+            color: #fddde6;
+            align-self: flex-start;
+        }
+
+        #chatlog {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #inputArea {
+            display: flex;
+            padding: 15px;
+            background-color: #2b2b2b;
+            border-top: 1px solid #444;
+        }
+
+        input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background-color: #ff6f91;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #ff5780;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>Tomo</div>
+        <div>
+            <a href="/chat">Chat</a>
+        </div>
+    </header>
+
+    <div id="chatbox">
+        <div id="chatlog">
+            <div class="msg bot"><strong>Tomo:</strong> Hi! I'm Tomo, your friendly AI support companion. Ready to help or chat whenever you need 💬</div>
+        </div>
+    </div>
+
+    <div id="inputArea">
+        <input type="text" id="userInput" placeholder="Say something..." onkeydown="if(event.key === 'Enter') sendMessage()"/>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage("You", message, "user");
+            input.value = "";
+
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await res.json();
+            addMessage("Tomo", data.reply, "bot");
+        }
+
+        function addMessage(sender, text, cls) {
+            const chatlog = document.getElementById("chatlog");
+            const msg = document.createElement("div");
+            msg.className = "msg " + cls;
+            msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chatlog.appendChild(msg);
+            chatlog.scrollTop = chatlog.scrollHeight;
+        }
+    </script>
+</body>
+</html>
